@@ -62,14 +62,20 @@
   let out = "";
   let submittedName = localStorage.getItem("name");
 
+  function calcAndSave(text) {
+    const out = calc(text);
+    if (out.length) {
+      localStorage.setItem("name", text);
+      submittedName = text;
+    }
+    return out;
+  }
+
   function calc(text) {
     const i = names.indexOf(text.toLowerCase());
-    if (i === -1) return;
-    localStorage.setItem("name", text);
-    submittedName = text;
-
-    if (i == 0) out = names.at(-1);
-    else out = names.at(i - 1);
+    if (i === -1) return "";
+    if (i == 0) return names.at(-1);
+    else return names.at(i - 1);
   }
 
   function capitalize(str) {
@@ -78,13 +84,22 @@
   }
 
   onMount(() => {
-    if (submittedName) calc(submittedName);
+    if (submittedName) out = calcAndSave(submittedName);
   });
+  // @ts-ignore
+  if (__LOG_RESULT__ != undefined) {
+    let result = "";
+    names.forEach((name) => {
+      result += `${capitalize(name)} -> ${capitalize(calc(name))}` + "\n";
+    });
+    console.log(result);
+  }
 </script>
 
 <main>
   Voit katsoa vain yhden nimen, joten katso omasi.
-  <form on:submit|preventDefault={(e) => calc(e.target.name.value)}>
+  <form
+    on:submit|preventDefault={(e) => (out = calcAndSave(e.target.name.value))}>
     <input
       placeholder="Nimesi"
       readonly={!!submittedName}

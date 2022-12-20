@@ -7,8 +7,9 @@ export default {
   // for more information about preprocessors
   preprocess: preprocess({
     replace: [
-      [/__NAMES__/, JSON.stringify(process.env.NAMES)],
-      [/__SEED__/, JSON.stringify(process.env.SEED)],
+      [/__NAMES__/g, JSON.stringify(process.env.NAMES)],
+      [/__SEED__/g, JSON.stringify(process.env.SEED)],
+      [/__LOG_RESULT__/g, JSON.stringify(process.env.LOG_RESULT)],
     ],
   }),
 };
