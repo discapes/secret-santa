@@ -1,131 +1,66 @@
-<script lang="js">
-  import { onMount } from "svelte";
+<script lang="ts">
+	import { onMount } from "svelte";
+	import { calculate, capitalize } from "./lib";
 
-  function cyrb128(str) {
-    let h1 = 1779033703,
-      h2 = 3144134277,
-      h3 = 1013904242,
-      h4 = 2773480762;
-    for (let i = 0, k; i < str.length; i++) {
-      k = str.charCodeAt(i);
-      h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-      h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-      h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-      h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-    }
-    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-    return [
-      (h1 ^ h2 ^ h3 ^ h4) >>> 0,
-      (h2 ^ h1) >>> 0,
-      (h3 ^ h1) >>> 0,
-      (h4 ^ h1) >>> 0,
-    ];
-  }
+	// @ts-ignore
+	const results = calculate(__NAMES__, __SEED__);
 
-  function sfc32(a, b, c, d) {
-    return function () {
-      a >>>= 0;
-      b >>>= 0;
-      c >>>= 0;
-      d >>>= 0;
-      var t = (a + b) | 0;
-      a = b ^ (b >>> 9);
-      b = (c + (c << 3)) | 0;
-      c = (c << 21) | (c >>> 11);
-      d = (d + 1) | 0;
-      t = (t + d) | 0;
-      c = (c + t) | 0;
-      return (t >>> 0) / 4294967296;
-    };
-  }
+	let out = "";
+	let submittedName = localStorage.getItem("name");
 
-  // @ts-ignore
-  const names = __NAMES__.split(" ");
+	function onSubmit(e: SubmitEvent) {
+		tryWithName((e as any)?.target?.name?.value);
+	}
 
-  // @ts-ignore
-  const seed = cyrb128(__SEED__);
-  const rand = sfc32(...seed);
+	function tryWithName(myName: string | undefined) {
+		if (!myName?.length) return;
+		const myTarget = results[myName];
+		if (!myTarget?.length) return;
+		localStorage.setItem("name", myName);
+		submittedName = myName;
+		out = myTarget;
+	}
 
-  const shuffle = (arr) => {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-
-  shuffle(names);
-
-  let out = "";
-  let submittedName = localStorage.getItem("name");
-
-  function calcAndSave(text) {
-    const out = calc(text);
-    if (out.length) {
-      localStorage.setItem("name", text);
-      submittedName = text;
-    }
-    return out;
-  }
-
-  function calc(text) {
-    const i = names.indexOf(text.toLowerCase());
-    if (i === -1) return "";
-    if (i == 0) return names.at(-1);
-    else return names.at(i - 1);
-  }
-
-  function capitalize(str) {
-    if (!str.length) return str;
-    else return str[0].toUpperCase() + str.slice(1).toLowerCase();
-  }
-
-  onMount(() => {
-    if (submittedName) out = calcAndSave(submittedName);
-  });
-  // @ts-ignore
-  if (__LOG_RESULT__ != undefined) {
-    let result = "";
-    names.forEach((name) => {
-      result += `${capitalize(name)} -> ${capitalize(calc(name))}` + "\n";
-    });
-    console.log(result);
-  }
+	onMount(() => {
+		if (submittedName) tryWithName(submittedName);
+	});
 </script>
 
 <main>
-  Voit katsoa vain yhden nimen, joten katso omasi.
-  <form
-    on:submit|preventDefault={(e) => (out = calcAndSave(e.target.name.value))}>
-    <input
-      placeholder="Nimesi"
-      readonly={!!submittedName}
-      value={localStorage.getItem("name") || ""}
-      name="name" />
-  </form>
-  Osta lahja henkilölle {capitalize(out)}.
+	Voit katsoa vain yhden nimen, joten katso omasi.
+	<form on:submit|preventDefault={onSubmit}>
+		<input placeholder="Nimesi" readonly={!!submittedName} value={submittedName} name="name" />
+	</form>
+	Keksi lahja henkilölle {capitalize(out)}.
 </main>
 
 <style>
-  input {
-    padding: 10px;
-    font-size: 20px;
-  }
+	input {
+		padding: 10px;
+		font-size: 20px;
+	}
 
-  main {
-    padding: 10px;
-    text-align: center;
-    font-size: 30px;
-    display: flex;
-    height: 100vh;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    flex-direction: column;
-    font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  }
+	main {
+		padding: 10px;
+		text-align: center;
+		font-size: 30px;
+		display: flex;
+		height: 100vh;
+		justify-content: center;
+		align-items: center;
+		gap: 15px;
+		flex-direction: column;
+		font-family:
+			Arial,
+			-apple-system,
+			BlinkMacSystemFont,
+			"Segoe UI",
+			Roboto,
+			Oxygen,
+			Ubuntu,
+			Cantarell,
+			"Open Sans",
+			"Helvetica Neue",
+			sans-serif;
+	}
 </style>
