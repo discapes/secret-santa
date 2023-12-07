@@ -14,7 +14,7 @@
 
 	function tryWithName(myName: string | undefined) {
 		if (!myName?.length) return;
-		const myTarget = results[myName];
+		const myTarget = results[myName.toLowerCase()];
 		if (!myTarget?.length) return;
 		localStorage.setItem("name", myName);
 		submittedName = myName;
